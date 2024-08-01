@@ -166,36 +166,7 @@ jobs:
               with:
                 name: integration-test-output
                 path: ./test-results/*
-    deploy-npm:
-        needs: [test-integration, test-unit]
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-            - name: Retrieve npm dependencies
-              uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3
-              with:
-                path:
-                    node_modules
-                key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-            - name: Retrieve Dist Directory
-              uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3
-              with:
-                path:
-                    ./dist
-                key: ${{ runner.os }}-dist-${{ hashFiles('package-lock.json') }}
-            - run: |
-                if [[ ${{contains(github.ref, 'hotfix')}}  ]]; then
-                sed -e "s|hotfix/REPLACE|${{ github.ref_name }}|" --in-place release.config.js
-                fi
-            - name: Deduplicate files
-              run: |
-                sudo snap install fclones
-                fclones group --min 128 --no-ignore . | fclones link
-            - name: Semantic Release
-              env:
-                NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: npx --no -- semantic-release
+    
     deploy-gh-pages:
         needs: [test-integration, test-unit]
         if: (!(startsWith(github.ref, 'refs/heads/dependabot/') || startsWith(github.ref, 'refs/heads/renovate/')))
